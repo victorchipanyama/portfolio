@@ -1,0 +1,151 @@
+---
+title: "Open Data Network Business Intelligence Report"
+subtitle: "Data-Driven Management Analysis"
+author:
+    - Victor Chipanyama, 667770903
+date: "`11 Nov`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+### Section 1 Business Problem Definition and Context
+
+A state health planner needs to identify Washington counties showing rising death-to-birth ratios and shifts in births/deaths from 2010 latest year to prioritize maternal and elder-care resources and target public health interventions. This dataset (WA birth and death counts by residence county) contains the county-level counts and time series needed to calculate rates and trends for such decisions.Because the dataset includes all births and deaths for every county over time, it allows accurate trend and ratio analysis needed to guide targeted public-health and resource-allocation decisions.
+
+### Section 2 Data Source Assessment 
+## A 
+This dataset, “Demographic Birth and Death by County, WA,” is published by the Washington State Department of Health. It can be accessed directly at:
+https://www.doh.wa.gov/DataandStatisticalReports/HealthStatistics.
+
+The Department of Health collects birth and death information from official vital statistics records—primarily birth certificates and death certificates—for regulatory reporting, public health monitoring, and long-term demographic planning. The dataset covers Washington State counties beginning in 1980 and is updated annually, providing consistent year-over-year population trend data.
+
+Its geographic scope includes all Washington State counties, representing all resident births and deaths regardless of where the events occurred. The dataset supports public health planning, resource allocation, and demographic forecasting.
+
+Limitations may include reporting delays, revisions to vital records, and changes in county boundaries or classification over time. Terms of use are available at:
+https://internal.open.piercecountywa.gov/stories/s/t3r8-e9ff
+
+## B
+
+```{r}
+getwd()
+```
+
+```{r}
+csv_data <- read.csv("/Users/vikela/MGMT/Demographic.csv")
+```
+
+## C
+
+```{r}
+dim(csv_data) # Verify rows > 500 and columns >= 5
+str(csv_data) # Check variable types (numeric vs categorical)
+
+colSums(is.na(csv_data))
+
+(colSums(is.na(csv_data)) / nrow(csv_data)) * 100
+sapply(csv_data, function(x) length(unique(x)))
+```
+
+The dataset is highly complete, with five of six variables County, Year, Births, Deaths, Natural Increase showing 0% missing values, meaning over 99% of the dataset is fully usable. Only Natural Increase Rate has missing values about 76% missing, but this does not affect core demographic metrics. We can trust this source because the data comes from the Washington State Department of Health, which collects official birth and death records from legally mandated certificates, ensuring accuracy and statewide coverage. This dataset directly supports public health planning and county-level strategic decisions, such as identifying which counties are growing or shrinking, forecasting healthcare demand, and allocating resources based on birth-death trends.
+
+### Section 3 Comprehensive Data Analysis
+## A
+```{r}
+str(csv_data)
+```
+
+```{r}
+csv_data <- read.csv("/Users/vikela/MGMT/Demographic.csv")
+
+csv_data$Births <- as.numeric(gsub(",", "", csv_data$Births))
+csv_data$Deaths <- as.numeric(gsub(",", "", csv_data$Deaths))
+csv_data$Natural_Increase <- as.numeric(gsub(",", "", csv_data$Natural_Increase))
+
+category_stats <- aggregate(csv_data$Births, 
+                           by = list(category = csv_data$County), 
+                           FUN = function(x) c(
+                             count = length(x[!is.na(x)]),
+                             total = sum(x, na.rm = TRUE),
+                             average = mean(x, na.rm = TRUE)
+                           ))
+results <- data.frame(
+  category = category_stats$category,
+  count = category_stats$x[, "count"],
+  total = category_stats$x[, "total"],
+  average = category_stats$x[, "average"]
+)
+
+results <- results[order(-results$total), ]
+
+```
+
+```{r}
+category_stats
+```
+
+length(x) counts how many valid non-missing observations exist for each county. sum(x) calculates the total number of events (Births, Deaths, or Natural Increase) for each county, showing overall population change contributions. mean(x) computes the average value, helping compare counties on typical birth or death levels. Together, these metrics reveal volume, overall impact, and typical patterns across counties, supporting population trend analysis
+
+## B
+```{r}
+library(ggplot2)
+county_births <- aggregate(Births ~ County, data = csv_data, sum)
+top_counties <- head(county_births[order(-county_births$Births), ], 8)
+
+ggplot(top_counties, aes(x = reorder(County, Births), y = Births)) +
+  geom_col(alpha = 0.8) +
+  coord_flip() +
+  labs(
+    title = "Top Counties by Total Births",
+    x = "County",
+    y = "Total Births",
+    caption = "Source: Washington Department of Health"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+yearly_births <- aggregate(Births ~ Year, data = csv_data, sum)
+yearly_births$Year <- as.numeric(substr(yearly_births$Year, 1, 4))
+
+ggplot(yearly_births, aes(x = Year, y = Births)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  labs(
+    title = "Total Births by Year",
+    x = "Year",
+    y = "Total Births",
+    caption = "Source: Washington Department of Health"
+  ) +
+  theme_minimal()
+```
+
+## C
+
+Strong Geographic Differences in Birth Totals
+Births are highly concentrated in a few counties. King County records the largest share of total births among counties, followed by Pierce, Snohomish, and Spokane. These counties significantly outperform others, indicating population density and healthcare demand are heavily concentrated in Washington’s major metropolitan areas.
+
+Long-Term Birth Trend Shows Growth Then Decline
+From 1980 to around 2009, total births increased steadily, rising from about 138,000 to over 175,000. After 2010, the trend stabilizes and then shows a noticeable decline after 2018, signaling potential demographic shifts such as aging populations, migration, or lower fertility rates.
+
+### Section 4 Strategic Recommendations
+
+By grouping the data by County and Year, summarising total births, and visualising the patterns, three clear strategic insights emerge. First, the grouped county totals show that King, Pierce, and Snohomish consistently generate the highest birth counts.
+
+Businesses serving families—such as hospitals, childcare centres, and retail—should prioritise these counties for expansion, as they represent the strongest and most reliable demand.
+
+Second, yearly summaries reveal a long-term upward trend in births from 1980 to around 2009. This growth supports long-term infrastructure planning in education, healthcare, and housing, as these sectors benefit from stable population increases.
+
+Finally, visualisations show a noticeable decline in births after 2018, signalling shifts in demographics and future demand. Organisations should prepare by diversifying services, improving efficiency, and exploring markets driven by migration rather than natural population growth.
+
+
+---
+title: "Government Data Analysis: [Open Data Network Business Intelligence Report]"
+---
+
+[Your existing analysis content here]
+
+---
+
+[← Back to Projects](projects.html) | [← Back to Home](index.html)

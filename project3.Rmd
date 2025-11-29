@@ -1,0 +1,142 @@
+---
+title: "Business Insights Report"
+subtitle: "Data Visualization and Communication"
+author: "Victor--6677706903"
+date: "`28 OCT 2025`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+---
+```{r}
+getwd()
+```
+### Question 1
+
+```{r}
+library(ggplot2)
+business_data <- read.csv("business_performance.csv")
+```
+
+##A
+```{r}
+str(business_data)
+summary(business_data)
+```
+
+The data in quarter and channel are categorical factor variables 
+
+The range is 412125-150231= 261894A
+
+##B
+
+```{R}
+Total_revenue_by_channel <- aggregate(revenue ~ channel,data = business_data,sum)
+
+Avg_customers_by_quarter <- aggregate(customers ~ quarter,data = business_data,mean)
+
+Total_revenue_by_channel
+Avg_customers_by_quarter
+```
+
+The Online Channel generates the most revenue 
+Q3 has the most customers on avaerage 
+This suggest that this period of the year attracts the most customer traffic in comparision to the other quarters 
+
+##C
+
+```{r}
+business_data$revenue_per_customer <- business_data$revenue / business_data$customers
+
+avg_rev_per_customer <- aggregate(revenue_per_customer~channel,data = business_data, mean)
+
+avg_rev_per_customer$revenue_per_customer <- round(avg_rev_per_customer$revenue_per_customer, 2)
+
+avg_rev_per_customer
+```
+
+Retail channel has the highest average revenue per customer 
+This informs us that on avarage an individual customer will spend more in store than online.
+
+###Question 2
+
+##A
+
+```{R}
+channel_totals <- aggregate(revenue ~ channel, data = business_data, sum)
+
+ggplot(channel_totals, aes(x = channel, y = revenue)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Revenue by Channel", 
+       x = "Sales Channel", y = "Revenue ($)")
+```
+
+The Online channel should receive more investment because it generates the highest revenue compared to both the Mobile and Retail channels 
+
+##B
+
+```{r}
+ggplot(business_data, aes(x = customers, y = revenue, color = channel)) +
+  geom_point(size = 3) +
+  labs(title = "Customer Count vs Revenue by Channel",
+       x = "Number of Customers", y = "Revenue ($)")
+```
+
+The Retail Channel seems to be the most efficient at converting customers into revenue because though they are a few they are all close together suggesting its the most efficient 
+
+
+###Question 3 
+
+##A
+
+```{R}
+library(knitr)
+
+
+performance_summary <- aggregate(
+  cbind(revenue, customers, conversion_rate) ~ channel,
+  data = business_data,
+  FUN = mean
+)
+
+
+total_revenue <- aggregate(revenue ~ channel, data = business_data, sum)
+performance_summary$Total_Revenue <- total_revenue$revenue
+
+
+performance_summary$Revenue_per_Customer <- round(
+  performance_summary$revenue / performance_summary$customers, 2
+)
+
+
+performance_summary$revenue <- round(performance_summary$revenue, 0)
+performance_summary$customers <- round(performance_summary$customers, 0)
+performance_summary$conversion_rate <- round(performance_summary$conversion_rate, 2)
+performance_summary$Total_Revenue <- round(performance_summary$Total_Revenue, 0)
+
+kable(
+  performance_summary,
+  col.names = c("Sales Channel",
+                "Avg Revenue ($)",
+                "Avg Customers",
+                "Avg Conversion Rate (%)",
+                "Total Revenue ($)",
+                "Revenue/Customer ($)"),
+  digits = 2,
+  caption = "Sales Channel Performance Summary"
+)
+```
+
+Online has the highest average revenue $347961 and revenue per customer $1,567 In-store (Retail) has the lowest revenue per customer $543 So I recommend Increasing digital marketing and personalized promotions for in-store customers to boost conversion efficiency. Although the In-Store channel converts 5% of customers, its revenue per customer ($543) lags behind Online’s $1,567. Replicating Online’s upselling and personalization strategies in stores could raise average spend per customer, potentially increasing total revenue by over 15% and improving overall business profitability.
+
+
+---
+title: "Government Data Analysis: [Business insight report]"
+---
+
+[Your existing analysis content here]
+
+---
+
+[← Back to Projects](projects.html) | [← Back to Home](index.html)
